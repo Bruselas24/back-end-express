@@ -17,7 +17,17 @@ app.get('/products', (req,res) =>{
 })
 
 app.get('/products/:id', (req,res) => {
-    res.send(pm.getProductById(parseInt(req.params.id)))
+
+    const product = pm.getProductById(parseInt(req.params.id))
+
+    if(!product){
+        res.status(400).send({
+            status:"error",
+            error:"Product not found"
+        })
+    }
+
+    res.send(product)
 })
 
 //Server Config

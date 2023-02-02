@@ -29,7 +29,7 @@ class ProductManager{
     }
 
     getProductById(pid){
-        return this.products[pid] || new Error('Product not found')
+        return this.products[pid]
     }
 
     updateProduct(pid,field,newValue){
