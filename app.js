@@ -4,21 +4,28 @@ import express from 'express'
 const app = express()
 const pm = new ProductManager()
 
-app.use(express.json())
-app.use(express.urlencoded({extended:true}))
+const productsRouter = express.Router()
+app.use('/products',productsRouter)
+
+productsRouter.use(express.json())
+productsRouter.use(express.urlencoded({extended:true}))
+
 
 //Server routes
-app.get('/products', (req,res) =>{
+productsRouter.get('/', async(req,res) =>{
+
+    const products = await pm.getProducts()
+
     if(!req.query){
-        res.send(pm.getProducts())
+        res.send(products)
     }
     const {limit} = req.query
-    res.send(pm.getProducts().slice(0,limit))
+    res.send(products.slice(0,limit))
 })
 
-app.get('/products/:id', (req,res) => {
+productsRouter.get('/:id', async(req,res) => {
 
-    const product = pm.getProductById(parseInt(req.params.id))
+    const product = await pm.getProductById(parseInt(req.params.id))
 
     if(!product){
         res.status(400).send({
@@ -30,8 +37,90 @@ app.get('/products/:id', (req,res) => {
     res.send(product)
 })
 
+productsRouter.post('/',async (req,res) => {
+
+    let message
+
+    try{
+        await pm.addProduct(req.body)
+
+        message = {
+            status:"success",
+            info:"The product was added successfully"
+        }
+        res.status(201)
+
+    }catch (e){
+
+        message = {
+            status: "error",
+            error: e.message,
+        }
+        res.status(418)
+
+    }finally {
+        res.send(message)
+    }
+})
+
+productsRouter.put('/',async (req,res) => {
+
+    const {pid,field,newValue} = req.body
+    let message
+
+    try{
+        await pm.updateProduct(pid,field,newValue)
+
+        message = {
+            status:"success",
+            info:"The product was modified successfully"
+        }
+        res.status(201)
+
+    }catch (e){
+        message = {
+            status: "error",
+            error: e.message,
+        }
+        res.status(418)
+
+    }finally {
+        res.send(message)
+    }
+})
+
+productsRouter.delete('/:id', async (req,res) => {
+
+    let message
+
+    try{
+        await pm.deleteProduct(parseInt(req.params.id))
+
+        message = {
+            status:"success",
+            info:"The product was deleted successfully"
+        }
+        res.status(200)
+
+    }catch (e){
+
+        message = {
+            status:"error",
+            error: e.message
+        }
+        res.status(200)
+
+    }
+
+    res.send(message)
+})
+
 //Server Config
 const PORT = 8080
 app.listen(PORT,() => {
-    console.log('Server listening on ports: ',PORT)
+    console.info('Server listening on ports: ',PORT)
+})
+
+app.on('error', (err) => {
+    console.error('error: ',err)
 })
