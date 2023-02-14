@@ -33,6 +33,7 @@ productsRouter.get('/:id', async(req,res) => {
 })
 
 productsRouter.post('/',async (req,res) => {
+
     let message
 
     try{

@@ -2,9 +2,9 @@ import {existsSync, promises, readFileSync, writeFileSync} from "fs";
 
 class ProductManager{
     constructor() {
-        this.path = './productManager.txt'
+        this.path = './productos.json'
 
-        if(!(existsSync(this.path))){
+        if(!existsSync(this.path)){
             writeFileSync(this.path,JSON.stringify([]))
         }
         this.products = JSON.parse(readFileSync(this.path,'utf-8'))
@@ -14,11 +14,21 @@ class ProductManager{
 
     async addProduct(newProduct){
 
+        const {title,description,code,price,status,stock,category} = newProduct
+
+        if(!(title && description && code && price && typeof status == "boolean" && stock && category)){
+            throw Error('Incomplete data')
+        }
+
         this.products.forEach(prod => {
             if(prod.code === newProduct.code){
                 throw Error('Repeated product code')
             }
         })
+
+        if(!(newProduct.status === true || newProduct.status === false)){
+            newProduct.status = true
+        }
 
         newProduct.id = ++this.id
         this.products.push(newProduct)
